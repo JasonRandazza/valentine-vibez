@@ -1,65 +1,96 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { DatePlan, UserMood, PartnerMood, Weather } from '@/lib/types';
+import DateForm from '@/components/DateForm';
+import VibeCard from '@/components/VibeCard';
+import { Heart } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Home() {
+  const [datePlan, setDatePlan] = useState<DatePlan | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleFormSubmit = async (userMood: UserMood, partnerMood: PartnerMood, weather: Weather, isSurprise?: boolean) => {
+    setLoading(true);
+    setDatePlan(null);
+    try {
+      const response = await fetch('/api/generate-vibe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userMood: isSurprise ? 'Funny' : userMood,
+          partnerMood: isSurprise ? 'Adventurous' : partnerMood,
+          weather,
+          userName: 'Jason'
+        })
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+      setDatePlan(data);
+    } catch (error) {
+      console.error("Failed to generate vibe:", error);
+      alert("Cupid is offline using cached arrows. Try again!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <main className="min-h-screen bg-cream-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+
+      {/* Background decorations */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <motion.div
+          animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-10 left-10 text-olive-main"
+        >
+          <Heart size={64} fill="currentColor" />
+        </motion.div>
+        <motion.div
+          animate={{ y: [0, 20, 0], opacity: [0.2, 0.5, 0.2] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute bottom-20 right-20 text-dusty-rose"
+        >
+          <Heart size={96} fill="currentColor" className="text-dusty-rose" />
+        </motion.div>
+      </div>
+
+      <div className="z-10 w-full max-w-4xl flex flex-col items-center">
+        <header className="text-center mb-12">
+          <motion.h1
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-5xl md:text-7xl font-extrabold text-olive-main drop-shadow-sm mb-4"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            ValentineVibe
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl text-olive-main/80 font-medium"
           >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+            Find the perfect date based on your mood & weather.
+          </motion.p>
+        </header>
+
+        <DateForm onSubmit={handleFormSubmit} />
+
+        {loading && (
+          <div className="mt-8 text-olive-main animate-bounce font-bold">
+            Consulting the Love Oracles... 🔮
+          </div>
+        )}
+
+        {datePlan && (
+          <div className="mt-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+            <VibeCard plan={datePlan} />
+          </div>
+        )}
+      </div>
+    </main>
   );
 }

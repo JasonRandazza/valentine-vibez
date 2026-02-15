@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  mood_energy   Int      // 1-10
+  love_language String
+  favorite_color String  @default("Olive Green")
+  createdAt     DateTime @default(now())
+}
+
+model DatePlan {
+  id              Int      @id @default(autoincrement())
+  title           String
+  description     String   @db.Text
+  location_vibe   String
+  music_link      String
+  food_suggestion String
+  createdAt       DateTime @default(now())
+  
+  // Relations could be added here if needed, keeping it simple for now
+  vibeHistory     VibeHistory[]
+}
+
+model VibeHistory {
+  id          Int      @id @default(autoincrement())
+  datePlanId  Int
+  datePlan    DatePlan @relation(fields: [datePlanId], references: [id])
+  generatedAt DateTime @default(now())
+}
