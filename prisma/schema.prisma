@@ -17,21 +17,24 @@ model User {
 }
 
 model DatePlan {
-  id              Int      @id @default(autoincrement())
+  id              String   @id @default(cuid())
   title           String
+  // Add @db.Text to allow for long AI responses
   description     String   @db.Text
   location_vibe   String
   music_link      String
-  food_suggestion String
+  food_suggestion String   @db.Text
+  vibeCheck       String?  @db.Text // If you added this field
   createdAt       DateTime @default(now())
-  
+
   // Relations could be added here if needed, keeping it simple for now
   vibeHistory     VibeHistory[]
 }
 
 model VibeHistory {
-  id          Int      @id @default(autoincrement())
-  datePlanId  Int
-  datePlan    DatePlan @relation(fields: [datePlanId], references: [id])
-  generatedAt DateTime @default(now())
+  id           Int      @id @default(autoincrement())
+  // Changed from Int to String to match DatePlan.id
+  datePlanId   String   
+  datePlan     DatePlan @relation(fields: [datePlanId], references: [id])
+  generatedAt  DateTime @default(now())
 }

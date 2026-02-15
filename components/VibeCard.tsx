@@ -19,7 +19,7 @@ export default function VibeCard({ plan }: VibeCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
 
     return (
-        <div className="w-full max-w-md h-[500px] perspective-1000">
+        <div className="w-full max-w-2xl h-[500px] perspective-1000 mx-auto">
             <motion.div
                 className="relative w-full h-full transition-all duration-500 transform-style-3d cursor-pointer"
                 onClick={() => setIsFlipped(!isFlipped)}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { DatePlan, UserMood, PartnerMood, Weather } from '@/lib/types';
+import { DatePlan } from '@/lib/types';
 import DateForm from '@/components/DateForm';
 import VibeCard from '@/components/VibeCard';
 import { Heart } from 'lucide-react';
@@ -9,39 +9,16 @@ import { motion } from 'framer-motion';
 
 export default function Home() {
   const [datePlan, setDatePlan] = useState<DatePlan | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  const handleFormSubmit = async (userMood: UserMood, partnerMood: PartnerMood, weather: Weather, isSurprise?: boolean) => {
-    setLoading(true);
-    setDatePlan(null);
-    try {
-      const response = await fetch('/api/generate-vibe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userMood: isSurprise ? 'Funny' : userMood,
-          partnerMood: isSurprise ? 'Adventurous' : partnerMood,
-          weather,
-          userName: 'Jason'
-        })
-      });
-
-      const data = await response.json();
-      if (data.error) throw new Error(data.error);
-      setDatePlan(data);
-    } catch (error) {
-      console.error("Failed to generate vibe:", error);
-      alert("Cupid is offline using cached arrows. Try again!");
-    } finally {
-      setLoading(false);
-    }
+  const handleVibeGenerated = (data: DatePlan) => {
+    setDatePlan(data);
   };
 
   return (
-    <main className="min-h-screen bg-cream-bg flex flex-col items-center justify-center p-6 relative overflow-hidden">
+    <main className="min-h-screen bg-cream-bg flex flex-col items-center justify-center p-6 relative overflow-y-auto overflow-x-hidden">
 
       {/* Background decorations */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+      <div className="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <motion.div
           animate={{ y: [0, -20, 0], opacity: [0.3, 0.6, 0.3] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -77,17 +54,18 @@ export default function Home() {
           </motion.p>
         </header>
 
-        <DateForm onSubmit={handleFormSubmit} />
-
-        {loading && (
-          <div className="mt-8 text-olive-main animate-bounce font-bold">
-            Consulting the Love Oracles... 🔮
-          </div>
-        )}
-
-        {datePlan && (
-          <div className="mt-10 animate-in fade-in slide-in-from-bottom-10 duration-700">
+        {!datePlan ? (
+          <DateForm onVibeGenerated={handleVibeGenerated} />
+        ) : (
+          <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-10 duration-700">
             <VibeCard plan={datePlan} />
+
+            <button
+              onClick={() => setDatePlan(null)}
+              className="mt-8 text-olive-main hover:text-dusty-rose underline font-medium transition-colors"
+            >
+              ← Plan Another Date
+            </button>
           </div>
         )}
       </div>

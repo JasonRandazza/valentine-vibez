@@ -13,6 +13,7 @@
   --color-olive-main: #556B2F;
   --color-cream-bg: #F5F5DC;
   --color-dusty-rose: #DCAE96;
+  --font-playfair: 'Playfair Display', serif;
 }
 
 @media (prefers-color-scheme: dark) {
